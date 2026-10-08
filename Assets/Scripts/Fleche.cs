@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Collections.Generic;
+using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
@@ -22,13 +24,24 @@ public class Fleche : MonoBehaviour
     [Tooltip("Durée (s) avant que la flèche tirée disparaisse")]
     [SerializeField] private float dureeDeVie = 10f;
 
+    [Header("Impact")]
+    [Tooltip("Objet vide placé au bout de la pointe (optionnel) : la flèche se plante exactement à cet endroit")]
+    [SerializeField] private Transform pointe;
+
     private Rigidbody rb;
     private XRGrabInteractable grab;
     private Collider[] mesColliders;
     private bool enVol;
+    private Vector3 positionPrecedente;
+    private readonly List<Collider> collidersIgnores = new List<Collider>();
 
     public bool EstPlantee { get; private set; }
     public bool EstEncochee { get; private set; }
+
+    /// <summary>Déclenché au départ de la flèche, avec sa vitesse (m/s). Utilisé pour le son.</summary>
+    public event System.Action<float> OnLancee;
+    /// <summary>Déclenché à l'impact : (objet touché, point d'impact, est-ce une cible ?).</summary>
+    public event System.Action<Collider, Vector3, bool> OnPlantee;
     public XRGrabInteractable Grab => grab;
 
     private void Awake()
@@ -97,47 +110,103 @@ public class Fleche : MonoBehaviour
         grab.enabled = false;
         ActiverColliders(true);
 
-        // Évite que la flèche percute l'arc au départ
+        // La flèche ne doit percuter ni l'arc, ni le corps et les mains du joueur
         if (aIgnorer != null)
-            foreach (Collider c1 in mesColliders)
-                foreach (Collider c2 in aIgnorer)
-                    Physics.IgnoreCollision(c1, c2);
+            collidersIgnores.AddRange(aIgnorer);
+        XROrigin joueur = FindFirstObjectByType<XROrigin>();
+        if (joueur != null)
+            collidersIgnores.AddRange(joueur.GetComponentsInChildren<Collider>(true));
+
+        foreach (Collider c1 in mesColliders)
+            foreach (Collider c2 in collidersIgnores)
+                if (c2 != null) Physics.IgnoreCollision(c1, c2);
+
+        // Elle vit maintenant dans le monde, indépendante de tout parent
+        transform.SetParent(null, true);
 
         rb.isKinematic = false;
         rb.useGravity = true;
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
         rb.linearVelocity = vitesse * multiplicateurVitesse;
+        positionPrecedente = rb.position;
         enVol = true;
+        OnLancee?.Invoke(rb.linearVelocity.magnitude);
 
         Destroy(gameObject, dureeDeVie);
     }
 
     private void FixedUpdate()
     {
+        if (!enVol) return;
+
+        // Anti-traversée : on vérifie le trajet parcouru depuis le dernier pas physique.
+        // Une flèche très rapide peut sinon passer à travers une cible fine.
+        Vector3 trajet = rb.position - positionPrecedente;
+        float distance = trajet.magnitude;
+        if (distance > 0.001f &&
+            TrouverObstacle(positionPrecedente, trajet / distance, distance, out RaycastHit impact))
+        {
+            Planter(impact.collider, impact.point);
+            return;
+        }
+        positionPrecedente = rb.position;
+
         // La pointe suit la courbe de la trajectoire
-        if (enVol && rb.linearVelocity.sqrMagnitude > 0.1f)
+        if (rb.linearVelocity.sqrMagnitude > 0.1f)
             rb.MoveRotation(Quaternion.LookRotation(rb.linearVelocity));
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (!enVol) return;
+        if (!enVol || EstIgnore(collision.collider)) return;
+        Planter(collision.collider, collision.GetContact(0).point);
+    }
 
+    private bool TrouverObstacle(Vector3 depart, Vector3 direction, float distance, out RaycastHit plusProche)
+    {
+        plusProche = default;
+        float meilleure = float.MaxValue;
+        bool trouve = false;
+
+        foreach (RaycastHit hit in Physics.RaycastAll(depart, direction, distance, ~0, QueryTriggerInteraction.Ignore))
+        {
+            if (EstIgnore(hit.collider) || hit.distance >= meilleure) continue;
+            meilleure = hit.distance;
+            plusProche = hit;
+            trouve = true;
+        }
+        return trouve;
+    }
+
+    private bool EstIgnore(Collider c)
+    {
+        return System.Array.IndexOf(mesColliders, c) >= 0 || collidersIgnores.Contains(c);
+    }
+
+    private void Planter(Collider touche, Vector3 pointImpact)
+    {
         enVol = false;
         EstPlantee = true;
 
-        // On fige la flèche dans l'objet touché
+        // On fige la flèche à l'endroit de l'impact
+        rb.linearVelocity = Vector3.zero;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
         rb.isKinematic = true;
+        rb.interpolation = RigidbodyInterpolation.None;
 
-        // Devient enfant de l'objet touché : suit les cibles mobiles
-        transform.SetParent(collision.transform, true);
+        // La pointe se place exactement sur le point d'impact
+        if (pointe != null)
+            transform.position = pointImpact + (transform.position - pointe.position);
 
-        // Si l'objet touché fait partie d'une cible, on calcule le score
-        Vector3 pointImpact = collision.GetContact(0).point;
-        Cible cible = collision.collider.GetComponentInParent<Cible>();
+        // Ne suit que les cibles (mobiles ou non), jamais le joueur ni le décor
+        Cible cible = touche.GetComponentInParent<Cible>();
         if (cible != null)
-            cible.EnregistrerImpact(pointImpact, collision.collider);
+        {
+            transform.SetParent(touche.transform, true);
+            cible.EnregistrerImpact(pointImpact, touche);
+        }
+        OnPlantee?.Invoke(touche, pointImpact, cible != null);
     }
 
     private void ActiverColliders(bool actif)
