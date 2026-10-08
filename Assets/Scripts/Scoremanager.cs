@@ -26,6 +26,9 @@ public class ScoreManager : MonoBehaviour
 
     public void AjouterPoints(int points)
     {
+        // Après la fin du chrono, les flèches encore en vol ne comptent plus
+        if (PartieManager.Instance != null && !PartieManager.Instance.EnCours) return;
+
         Score += points;
         OnScoreChange?.Invoke(Score);
     }

@@ -36,6 +36,14 @@ public class Cible : MonoBehaviour
         new Zone { rayonRelatif = 1.0f, points = 2 },
     };
 
+    /// <summary>Taille de la cible dans la scène, avant l'effet du niveau de difficulté.</summary>
+    public Vector3 EchelleOrigine { get; private set; }
+
+    private void Awake()
+    {
+        EchelleOrigine = transform.localScale;
+    }
+
     /// <summary>Déclenché à chaque impact : (points gagnés, point d'impact).</summary>
     public event Action<int, Vector3> OnTouchee;
 
