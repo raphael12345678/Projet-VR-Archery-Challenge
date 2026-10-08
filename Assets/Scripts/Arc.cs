@@ -114,7 +114,8 @@ public class Arc : MonoBehaviour
         float tension = Tension;
         mainSurCorde = null;
 
-        if (grab.isSelected && tension >= tensionMinTir && encoche.hasSelection)
+        bool tirAutorise = PartieManager.Instance == null || PartieManager.Instance.TirAutorise;
+        if (tirAutorise && grab.isSelected && tension >= tensionMinTir && encoche.hasSelection)
         {
             IXRSelectInteractable selection = encoche.firstInteractableSelected;
             Fleche fleche = selection.transform.GetComponent<Fleche>();
