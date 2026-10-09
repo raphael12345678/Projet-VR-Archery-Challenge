@@ -20,6 +20,8 @@ public class PartieManager : MonoBehaviour
 
     [Tooltip("Niveau utilisé si aucun n'a été choisi dans le menu (pratique pour tester)")]
     [SerializeField] private ParametresNiveau niveauParDefaut;
+    [Tooltip("Nom exact de la scène du menu")]
+    [SerializeField] private string sceneMenu = "Menu";
 
     public ParametresNiveau Niveau { get; private set; }
     public float TempsRestant { get; private set; }
@@ -95,6 +97,12 @@ public class PartieManager : MonoBehaviour
     {
         ChoixNiveau.Niveau = Niveau;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    /// <summary>Retourne au menu principal (bouton de fin de partie ou de pause).</summary>
+    public void RetourMenu()
+    {
+        SceneManager.LoadScene(sceneMenu);
     }
 
     private void AppliquerNiveau()
