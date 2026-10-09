@@ -12,6 +12,8 @@ public class HUDPartie : MonoBehaviour
     [SerializeField] private TMP_Text texteObjectif;
     [Tooltip("Message affiché à la fin (caché pendant la partie)")]
     [SerializeField] private TMP_Text texteFin;
+    [Tooltip("Objet contenant les boutons Rejouer / Menu, affiché à la fin (et toujours en entraînement)")]
+    [SerializeField] private GameObject boutonsFin;
 
     [Tooltip("Le temps passe en rouge en dessous de ce nombre de secondes")]
     [SerializeField] private float alerteTemps = 10f;
@@ -60,10 +62,13 @@ public class HUDPartie : MonoBehaviour
         if (texteObjectif != null)
             texteObjectif.text = niveau.estEntrainement ? "Entraînement libre" : $"Objectif : {niveau.scoreObjectif} pts";
         if (texteFin != null) texteFin.gameObject.SetActive(false);
+        // En entraînement il n'y a pas de fin : le bouton Menu reste disponible
+        if (boutonsFin != null) boutonsFin.SetActive(niveau.estEntrainement);
     }
 
     private void AfficherFin(int score)
     {
+        if (boutonsFin != null) boutonsFin.SetActive(true);
         if (texteFin == null) return;
 
         bool reussi = score >= partie.Niveau.scoreObjectif;
