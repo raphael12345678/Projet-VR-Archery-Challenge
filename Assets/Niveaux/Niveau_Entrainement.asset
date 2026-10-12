@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Niveau_Entrainement
   m_EditorClassIdentifier: 
   nom: "Entra\xEEnement"
-  estEntrainement: 0
+  estEntrainement: 1
   duree: 0
   echelleCibles: 1
   ciblesMobiles: 0

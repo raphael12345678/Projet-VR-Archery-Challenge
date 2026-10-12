@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nom: Normal
   estEntrainement: 0
-  duree: 90
+  duree: 120
   echelleCibles: 1
   ciblesMobiles: 1
-  vitesseCibles: 1.2
+  vitesseCibles: 1
   amplitudeCibles: 1.5
   scoreObjectif: 60

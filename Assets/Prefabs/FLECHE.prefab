@@ -78,7 +78,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3979d60c89020cb49b2aeb848078e410, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  multiplicateurVitesse: 1
+  multiplicateurVitesse: 0.8
   dureeDeVie: 5
   pointe: {fileID: 0}
 --- !u!65 &5227462275786436033
