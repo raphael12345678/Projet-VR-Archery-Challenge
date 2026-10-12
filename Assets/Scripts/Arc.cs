@@ -51,6 +51,22 @@ public class Arc : MonoBehaviour
     /// <summary>Tension actuelle de 0 à 1 (pour sons, vibrations, UI).</summary>
     public float Tension => tirageMax > 0f ? tirage / tirageMax : 0f;
 
+    /// <summary>Flèche actuellement posée sur la corde (null s'il n'y en a pas).</summary>
+    public Fleche FlecheEncochee =>
+        encoche != null && encoche.hasSelection
+            ? encoche.firstInteractableSelected.transform.GetComponent<Fleche>()
+            : null;
+
+    /// <summary>Point de départ et vitesse qu'aurait la flèche si on relâchait maintenant (pour l'aide à la visée).</summary>
+    public bool PredireTir(out Vector3 depart, out Vector3 vitesse)
+    {
+        Fleche fleche = FlecheEncochee;
+        depart = fleche != null ? fleche.transform.position : firePoint.position;
+        float multiplicateur = fleche != null ? fleche.MultiplicateurVitesse : 1f;
+        vitesse = firePoint.forward * vitesseMax * Tension * multiplicateur;
+        return fleche != null && Tension >= tensionMinTir && grab.isSelected;
+    }
+
     /// <summary>Déclenché à chaque tir, avec la tension utilisée.</summary>
     public event Action<float> OnTir;
 

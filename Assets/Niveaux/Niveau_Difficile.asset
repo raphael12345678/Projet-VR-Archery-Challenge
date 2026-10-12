@@ -17,6 +17,6 @@ MonoBehaviour:
   duree: 60
   echelleCibles: 0.6
   ciblesMobiles: 1
-  vitesseCibles: 2.5
+  vitesseCibles: 1.5
   amplitudeCibles: 2
   scoreObjectif: 80
