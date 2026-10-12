@@ -43,6 +43,7 @@ public class Fleche : MonoBehaviour
     /// <summary>Déclenché à l'impact : (objet touché, point d'impact, est-ce une cible ?).</summary>
     public event System.Action<Collider, Vector3, bool> OnPlantee;
     public XRGrabInteractable Grab => grab;
+    public float MultiplicateurVitesse => multiplicateurVitesse;
 
     private void Awake()
     {

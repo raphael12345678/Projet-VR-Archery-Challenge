@@ -44,7 +44,7 @@ public class HUDPartie : MonoBehaviour
     {
         if (partie == null || texteTemps == null || partie.Niveau == null) return;
 
-        if (partie.EstEntrainement)
+        if (partie.TempsIllimite)
         {
             texteTemps.text = "Temps libre";
             texteTemps.color = couleurNormale;

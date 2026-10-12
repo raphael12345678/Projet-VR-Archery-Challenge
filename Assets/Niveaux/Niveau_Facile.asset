@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nom: Facile
   estEntrainement: 0
-  duree: 120
+  duree: 5
   echelleCibles: 1.5
   ciblesMobiles: 1
   vitesseCibles: 0.5
