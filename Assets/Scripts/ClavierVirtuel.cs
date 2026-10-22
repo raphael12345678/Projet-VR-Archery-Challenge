@@ -129,6 +129,13 @@ public class ClavierVirtuel : MonoBehaviour
         OnValider?.Invoke(Pseudo.Trim());
     }
 
+    /// <summary>Pré-remplit le champ (ex. avec le pseudo mémorisé).</summary>
+    public void DefinirPseudo(string texte)
+    {
+        Pseudo = string.IsNullOrEmpty(texte) ? "" : texte.Substring(0, Mathf.Min(texte.Length, longueurMax));
+        MettreAJour();
+    }
+
     /// <summary>Vide le champ (avant une nouvelle saisie).</summary>
     public void Reinitialiser()
     {

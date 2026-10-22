@@ -20,3 +20,5 @@ MonoBehaviour:
   vitesseCibles: 0
   amplitudeCibles: 0
   scoreObjectif: 0
+  niveauSuivant: {fileID: 0}
+  debloqueParDefaut: 1

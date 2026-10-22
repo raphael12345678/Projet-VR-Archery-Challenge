@@ -14,9 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nom: Facile
   estEntrainement: 0
-  duree: 5
+  duree: 120
   echelleCibles: 1.5
   ciblesMobiles: 1
   vitesseCibles: 0.5
   amplitudeCibles: 1
   scoreObjectif: 40
+  niveauSuivant: {fileID: 11400000, guid: e917f7c654c543642b5c6e90424b558d, type: 2}
+  debloqueParDefaut: 1
