@@ -14,9 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nom: Normal
   estEntrainement: 0
-  duree: 120
+  duree: 90
   echelleCibles: 1
   ciblesMobiles: 1
-  vitesseCibles: 1
+  vitesseCibles: 0.8
   amplitudeCibles: 1.5
   scoreObjectif: 60
+  niveauSuivant: {fileID: 11400000, guid: 9e6dd76c223948d439e5f5cf345815ae, type: 2}
+  debloqueParDefaut: 0

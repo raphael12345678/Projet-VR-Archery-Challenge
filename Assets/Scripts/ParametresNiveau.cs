@@ -27,6 +27,10 @@ public class ParametresNiveau : ScriptableObject
     public float amplitudeCibles = 1.5f;
 
     [Header("Progression")]
-    [Tooltip("Score à atteindre pour réussir le niveau (débloque les améliorations)")]
+    [Tooltip("Score à atteindre pour réussir le niveau et débloquer le suivant")]
     public int scoreObjectif = 50;
+    [Tooltip("Niveau débloqué quand on atteint l'objectif (vide pour le dernier niveau)")]
+    public ParametresNiveau niveauSuivant;
+    [Tooltip("Jouable dès le début (Entraînement et Facile)")]
+    public bool debloqueParDefaut;
 }

@@ -22,8 +22,21 @@ public class MenuPrincipal : MonoBehaviour
             return;
         }
 
+        if (!Progression.EstDebloque(niveaux[index]))
+        {
+            Debug.Log($"Niveau {niveaux[index].nom} verrouillé.");
+            return;
+        }
+
         ChoixNiveau.Niveau = niveaux[index];
         SceneManager.LoadScene(sceneJeu);
+    }
+
+    /// <summary>Reverrouille tous les niveaux DU JOUEUR ACTUEL (bouton de démonstration) et recharge le menu.</summary>
+    public void ReinitialiserProgression()
+    {
+        Progression.Reinitialiser(niveaux);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     public void Quitter()

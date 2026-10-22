@@ -16,6 +16,10 @@ public class EnregistrementScore : MonoBehaviour
     [SerializeField] private AffichageClassement classement;
     [Tooltip("Boutons Rejouer / Menu : cachés pendant la saisie du pseudo")]
     [SerializeField] private GameObject boutonsFin;
+    [Tooltip("Si un pseudo est déjà choisi dans le menu : enregistrer directement, sans afficher le clavier")]
+    [SerializeField] private bool utiliserPseudoMemorise = true;
+    [Tooltip("Classement du niveau visible pendant toute la partie (caché en entraînement)")]
+    [SerializeField] private bool classementVisiblePendantPartie = true;
 
     private PartieManager partie;
     private int scoreFinal;
@@ -26,13 +30,28 @@ public class EnregistrementScore : MonoBehaviour
         if (panneauClassement != null) panneauClassement.SetActive(false);
 
         partie = PartieManager.Instance;
-        if (partie != null) partie.OnFinPartie += OnFinPartie;
+        if (partie != null)
+        {
+            partie.OnDebutPartie += OnDebutPartie;
+            partie.OnFinPartie += OnFinPartie;
+            if (partie.Niveau != null) OnDebutPartie(partie.Niveau);
+        }
         if (clavier != null) clavier.OnValider += OnPseudoValide;
+    }
+
+    private void OnDebutPartie(ParametresNiveau niveau)
+    {
+        if (panneauClassement != null)
+            panneauClassement.SetActive(classementVisiblePendantPartie && !niveau.estEntrainement);
     }
 
     private void OnDestroy()
     {
-        if (partie != null) partie.OnFinPartie -= OnFinPartie;
+        if (partie != null)
+        {
+            partie.OnDebutPartie -= OnDebutPartie;
+            partie.OnFinPartie -= OnFinPartie;
+        }
         if (clavier != null) clavier.OnValider -= OnPseudoValide;
     }
 
@@ -40,6 +59,14 @@ public class EnregistrementScore : MonoBehaviour
     {
         if (partie.EstEntrainement) return; // pas de classement en entraînement
         scoreFinal = score;
+
+        // Pseudo déjà connu : enregistrement immédiat (avant un éventuel changement de niveau)
+        string memorise = SauvegardeScores.PseudoMemorise;
+        if (utiliserPseudoMemorise && !string.IsNullOrWhiteSpace(memorise))
+        {
+            OnPseudoValide(memorise);
+            return;
+        }
         StartCoroutine(AfficherSaisie());
     }
 
@@ -47,14 +74,18 @@ public class EnregistrementScore : MonoBehaviour
     {
         // On attend une image : le HUD affiche les boutons de fin au même moment, on les recache
         yield return null;
+        string memorise = SauvegardeScores.PseudoMemorise;
         if (boutonsFin != null) boutonsFin.SetActive(false);
-
-        if (clavier != null) clavier.Reinitialiser();
+        if (clavier != null) clavier.DefinirPseudo(memorise);
         if (panneauClavier != null) panneauClavier.SetActive(true);
     }
 
     private void OnPseudoValide(string pseudo)
     {
+        pseudo = SauvegardeScores.PseudoExistant(pseudo);
+        SauvegardeScores.PseudoMemorise = pseudo; // retenu pour les prochaines parties
+        // La progression dépend du pseudo : on débloque le niveau suivant pour CE joueur
+        if (partie.NiveauReussi) Progression.Debloquer(partie.Niveau.niveauSuivant);
         EntreeScore entree = SauvegardeScores.Ajouter(pseudo, scoreFinal, partie.Niveau.nom);
 
         if (panneauClavier != null) panneauClavier.SetActive(false);
