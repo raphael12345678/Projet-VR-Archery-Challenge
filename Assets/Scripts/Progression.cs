@@ -22,9 +22,12 @@ public static class Progression
     public static bool EstDebloque(ParametresNiveau niveau)
     {
         if (niveau == null) return false;
-        if (niveau.debloqueParDefaut || PlayerPrefs.GetInt(Cle(niveau), 0) == 1) return true;
+        if (niveau.debloqueParDefaut) return true;
 
-        // Pseudo déjà présent dans le classement : sa progression est retrouvée grâce à ses records
+        // Valeur déjà enregistrée pour ce joueur : 1 = débloqué, 0 = reverrouillé par Reset
+        if (PlayerPrefs.HasKey(Cle(niveau))) return PlayerPrefs.GetInt(Cle(niveau)) == 1;
+
+        // Aucune info : pseudo déjà présent dans le classement → progression retrouvée grâce à ses records
         if (DebloqueParClassement(niveau))
         {
             PlayerPrefs.SetInt(Cle(niveau), 1);
@@ -61,11 +64,16 @@ public static class Progression
         return true;
     }
 
-    /// <summary>Reverrouille les niveaux donnés pour le joueur actuel (test / démonstration).</summary>
+    /// <summary>
+    /// Reverrouille les niveaux donnés pour le joueur actuel (test / démonstration).
+    /// On enregistre 0 (et non une suppression) pour que les records du classement
+    /// ne redébloquent pas aussitôt les niveaux.
+    /// </summary>
     public static void Reinitialiser(ParametresNiveau[] niveaux)
     {
         foreach (ParametresNiveau niveau in niveaux)
-            if (niveau != null) PlayerPrefs.DeleteKey(Cle(niveau));
+            if (niveau != null && !niveau.debloqueParDefaut) PlayerPrefs.SetInt(Cle(niveau), 0);
         PlayerPrefs.Save();
+        Debug.Log($"Progression remise à zéro pour {JoueurActuel}");
     }
 }
